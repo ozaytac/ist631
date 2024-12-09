@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const cauchyPDF = (x, konumParametresi, olcekParametresi) => {
   return 1 / (Math.PI * olcekParametresi * (1 + Math.pow((x - konumParametresi) / olcekParametresi, 2)));
@@ -17,7 +17,6 @@ const cauchyRandom = (konum, olcek) => {
 const generateMLTSamples = (sampleSize, numSamples, konum, olcek) => {
   const histogram = new Map();
   const binSize = 1.0;
-  const means = [];
 
   for (let i = 0; i < numSamples; i++) {
     let sum = 0;
@@ -25,7 +24,6 @@ const generateMLTSamples = (sampleSize, numSamples, konum, olcek) => {
       sum += cauchyRandom(konum, olcek);
     }
     const mean = sum / sampleSize;
-    means.push(mean);
     const bin = Math.floor(mean / binSize) * binSize;
     histogram.set(bin, (histogram.get(bin) || 0) + 1);
   }
@@ -34,8 +32,7 @@ const generateMLTSamples = (sampleSize, numSamples, konum, olcek) => {
   return Array.from(histogram.entries())
     .map(([bin, freq]) => ({
       x: bin,
-      freq: freq / numSamples,
-      density: freq / (numSamples * binSize)
+      freq: freq / numSamples
     }))
     .sort((a, b) => a.x - b.x);
 };
@@ -79,6 +76,21 @@ const CauchyDagilimGorsellestiricisi = () => {
     setCDFVerileri(veriler);
     yeniOrneklemCek();
   }, [konumParametresi, olcekParametresi]);
+
+  const renderMLTGraph = (data, label, color) => (
+    <div>
+      <p className="text-sm font-semibold mb-2">{label}</p>
+      <ResponsiveContainer width="100%" height={200}>
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="x" type="number" domain={[-10, 10]} />
+          <YAxis domain={[0, 'auto']} />
+          <Tooltip />
+          <Line type="step" dataKey="freq" stroke={color} name={label} dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
 
   return (
     <div className="container mx-auto p-4">
@@ -165,54 +177,10 @@ const CauchyDagilimGorsellestiricisi = () => {
       <div className="bg-white rounded-lg shadow-lg p-4">
         <h3 className="text-lg font-bold mb-4">MLT Test Grafikleri (Her biri 5000 örneklem)</h3>
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm font-semibold mb-2">n=5</p>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={mlt5Veriler}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="x" type="number" domain={[-10, 10]} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="freq" fill="#8884d8" fillOpacity={0.6} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div>
-            <p className="text-sm font-semibold mb-2">n=10</p>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={mlt10Veriler}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="x" type="number" domain={[-10, 10]} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="freq" fill="#82ca9d" fillOpacity={0.6} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div>
-            <p className="text-sm font-semibold mb-2">n=30</p>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={mlt30Veriler}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="x" type="number" domain={[-10, 10]} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="freq" fill="#ff7300" fillOpacity={0.6} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div>
-            <p className="text-sm font-semibold mb-2">n=50</p>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={mlt50Veriler}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="x" type="number" domain={[-10, 10]} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="freq" fill="#0088fe" fillOpacity={0.6} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {renderMLTGraph(mlt5Veriler, "n=5", "#8884d8")}
+          {renderMLTGraph(mlt10Veriler, "n=10", "#82ca9d")}
+          {renderMLTGraph(mlt30Veriler, "n=30", "#ff7300")}
+          {renderMLTGraph(mlt50Veriler, "n=50", "#0088fe")}
         </div>
       </div>
 
