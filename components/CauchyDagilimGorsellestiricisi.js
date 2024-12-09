@@ -1,6 +1,5 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 const cauchyPDF = (x, konumParametresi, olcekParametresi) => {
   return 1 / (Math.PI * olcekParametresi * (1 + Math.pow((x - konumParametresi) / olcekParametresi, 2)));
@@ -115,57 +114,136 @@ const CauchyDagilimGorsellestiricisi = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-<div className="bg-white rounded-lg shadow-lg p-4 lg:col-span-2">
-          <h3 className="text-lg font-bold mb-4">MLT Test Grafikleri (Her biri 1000 örneklem)</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm font-semibold mb-2">n=5</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={mlt5Veriler}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="x" type="number" domain={[-10, 10]} />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="freq" fill="#8884d8" name="n=5 Örneklem" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div>
-              <p className="text-sm font-semibold mb-2">n=10</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={mlt10Veriler}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="x" type="number" domain={[-10, 10]} />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="freq" fill="#82ca9d" name="n=10 Örneklem" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div>
-              <p className="text-sm font-semibold mb-2">n=30</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={mlt30Veriler}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="x" type="number" domain={[-10, 10]} />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="freq" fill="#ff7300" name="n=30 Örneklem" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div>
-              <p className="text-sm font-semibold mb-2">n=50</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={mlt50Veriler}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="x" type="number" domain={[-10, 10]} />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="freq" fill="#0088fe" name="n=50 Örneklem" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+        <div className="bg-white rounded-lg shadow-lg p-4">
+          <h3 className="text-lg font-bold mb-4">Konum Parametresi (x0)</h3>
+          <input
+            type="range"
+            min="-10"
+            max="10"
+            step="0.1"
+            value={konumParametresi}
+            onChange={(e) => setKonumParametresi(Number(e.target.value))}
+            className="w-full"
+          />
+          <span className="text-sm">Değer: {konumParametresi.toFixed(2)}</span>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-4">
+          <h3 className="text-lg font-bold mb-4">Ölçek Parametresi</h3>
+          <input
+            type="range"
+            min="0.1"
+            max="5"
+            step="0.1"
+            value={olcekParametresi}
+            onChange={(e) => setOlcekParametresi(Number(e.target.value))}
+            className="w-full"
+          />
+          <span className="text-sm">Değer: {olcekParametresi.toFixed(2)}</span>
+          <button
+            onClick={yeniOrneklemCek}
+            disabled={loading}
+            className="mt-2 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:bg-blue-300"
+          >
+            {loading ? "Hesaplanıyor..." : "Yeni Örneklem Çek"}
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white rounded-lg shadow-lg p-4">
+          <h3 className="text-lg font-bold mb-4">Teorik PDF</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={pdfVerileri}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="x" type="number" domain={[-10, 10]} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="pdf" stroke="#8884d8" name="Teorik PDF" dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-4">
+          <h3 className="text-lg font-bold mb-4">Örneklem Dağılımı (n=1000)</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={orneklemVerileri}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="x" type="number" domain={[-10, 10]} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="freq" stroke="#82ca9d" name="Örneklem" dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-4">
+          <h3 className="text-lg font-bold mb-4">CDF</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={cdfVerileri}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="x" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="cdf" stroke="#8884d8" name="CDF" dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-lg p-4">
+        <h3 className="text-lg font-bold mb-4">MLT Test Grafikleri (Her biri 1000 örneklem)</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <p className="text-sm font-semibold mb-2">n=5</p>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={mlt5Veriler}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="x" type="number" domain={[-10, 10]} />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="freq" fill="#8884d8" name="n=5 Örneklem" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div>
+            <p className="text-sm font-semibold mb-2">n=10</p>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={mlt10Veriler}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="x" type="number" domain={[-10, 10]} />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="freq" fill="#82ca9d" name="n=10 Örneklem" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div>
+            <p className="text-sm font-semibold mb-2">n=30</p>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={mlt30Veriler}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="x" type="number" domain={[-10, 10]} />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="freq" fill="#ff7300" name="n=30 Örneklem" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div>
+            <p className="text-sm font-semibold mb-2">n=50</p>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={mlt50Veriler}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="x" type="number" domain={[-10, 10]} />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="freq" fill="#0088fe" name="n=50 Örneklem" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
