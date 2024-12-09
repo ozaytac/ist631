@@ -168,53 +168,49 @@ const CauchyDagilimGorsellestiricisi = () => {
           <div>
             <p className="text-sm font-semibold mb-2">n=5</p>
             <ResponsiveContainer width="100%" height={200}>
-              <ComposedChart data={mlt5Veriler}>
+              <BarChart data={mlt5Veriler}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="x" type="number" domain={[-10, 10]} />
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="freq" fill="#8884d8" fillOpacity={0.6} />
-                <Line type="monotone" dataKey="density" stroke="#ff7300" dot={false} />
-              </ComposedChart>
+              </BarChart>
             </ResponsiveContainer>
           </div>
           <div>
             <p className="text-sm font-semibold mb-2">n=10</p>
             <ResponsiveContainer width="100%" height={200}>
-              <ComposedChart data={mlt10Veriler}>
+              <BarChart data={mlt10Veriler}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="x" type="number" domain={[-10, 10]} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="freq" fill="#8884d8" fillOpacity={0.6} />
-                <Line type="monotone" dataKey="density" stroke="#ff7300" dot={false} />
-              </ComposedChart>
+                <Bar dataKey="freq" fill="#82ca9d" fillOpacity={0.6} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
           <div>
             <p className="text-sm font-semibold mb-2">n=30</p>
             <ResponsiveContainer width="100%" height={200}>
-              <ComposedChart data={mlt30Veriler}>
+              <BarChart data={mlt30Veriler}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="x" type="number" domain={[-10, 10]} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="freq" fill="#8884d8" fillOpacity={0.6} />
-                <Line type="monotone" dataKey="density" stroke="#ff7300" dot={false} />
-              </ComposedChart>
+                <Bar dataKey="freq" fill="#ff7300" fillOpacity={0.6} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
           <div>
             <p className="text-sm font-semibold mb-2">n=50</p>
             <ResponsiveContainer width="100%" height={200}>
-              <ComposedChart data={mlt50Veriler}>
+              <BarChart data={mlt50Veriler}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="x" type="number" domain={[-10, 10]} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="freq" fill="#8884d8" fillOpacity={0.6} />
-                <Line type="monotone" dataKey="density" stroke="#ff7300" dot={false} />
-              </ComposedChart>
+                <Bar dataKey="freq" fill="#0088fe" fillOpacity={0.6} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
