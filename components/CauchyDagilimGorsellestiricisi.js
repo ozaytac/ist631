@@ -16,7 +16,8 @@ const cauchyRandom = (konum, olcek) => {
 
 const generateMLTSamples = (sampleSize, numSamples, konum, olcek) => {
   const histogram = new Map();
-  const binSize = 0.5;
+  const binSize = 1.0;
+  const means = [];
 
   for (let i = 0; i < numSamples; i++) {
     let sum = 0;
@@ -24,6 +25,7 @@ const generateMLTSamples = (sampleSize, numSamples, konum, olcek) => {
       sum += cauchyRandom(konum, olcek);
     }
     const mean = sum / sampleSize;
+    means.push(mean);
     const bin = Math.floor(mean / binSize) * binSize;
     histogram.set(bin, (histogram.get(bin) || 0) + 1);
   }
@@ -32,7 +34,8 @@ const generateMLTSamples = (sampleSize, numSamples, konum, olcek) => {
   return Array.from(histogram.entries())
     .map(([bin, freq]) => ({
       x: bin,
-      freq: freq / maxFreq
+      freq: freq / numSamples,
+      density: freq / (numSamples * binSize)
     }))
     .sort((a, b) => a.x - b.x);
 };
@@ -42,7 +45,6 @@ const CauchyDagilimGorsellestiricisi = () => {
   const [olcekParametresi, setOlcekParametresi] = useState(1);
   const [pdfVerileri, setPDFVerileri] = useState([]);
   const [cdfVerileri, setCDFVerileri] = useState([]);
-  const [orneklemVerileri, setOrneklemVerileri] = useState([]);
   const [mlt5Veriler, setMLT5Veriler] = useState([]);
   const [mlt10Veriler, setMLT10Veriler] = useState([]);
   const [mlt30Veriler, setMLT30Veriler] = useState([]);
@@ -52,31 +54,11 @@ const CauchyDagilimGorsellestiricisi = () => {
   const yeniOrneklemCek = () => {
     setLoading(true);
 
-    const orneklem = Array.from({ length: 1000 }, () => ({
-      x: cauchyRandom(konumParametresi, olcekParametresi)
-    })).sort((a, b) => a.x - b.x);
+    const mlt5 = generateMLTSamples(5, 5000, konumParametresi, olcekParametresi);
+    const mlt10 = generateMLTSamples(10, 5000, konumParametresi, olcekParametresi);
+    const mlt30 = generateMLTSamples(30, 5000, konumParametresi, olcekParametresi);
+    const mlt50 = generateMLTSamples(50, 5000, konumParametresi, olcekParametresi);
 
-    const histogram = new Map();
-    const binSize = 0.5;
-    orneklem.forEach(point => {
-      const bin = Math.floor(point.x / binSize) * binSize;
-      histogram.set(bin, (histogram.get(bin) || 0) + 1);
-    });
-
-    const maxFreq = Math.max(...histogram.values());
-    const orneklemGorsellestirme = Array.from(histogram.entries())
-      .map(([bin, freq]) => ({
-        x: bin,
-        freq: freq / maxFreq
-      }))
-      .sort((a, b) => a.x - b.x);
-
-    const mlt5 = generateMLTSamples(5, 1000, konumParametresi, olcekParametresi);
-    const mlt10 = generateMLTSamples(10, 1000, konumParametresi, olcekParametresi);
-    const mlt30 = generateMLTSamples(30, 1000, konumParametresi, olcekParametresi);
-    const mlt50 = generateMLTSamples(50, 1000, konumParametresi, olcekParametresi);
-
-    setOrneklemVerileri(orneklemGorsellestirme);
     setMLT5Veriler(mlt5);
     setMLT10Veriler(mlt10);
     setMLT30Veriler(mlt30);
@@ -150,7 +132,7 @@ const CauchyDagilimGorsellestiricisi = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow-lg p-4">
           <h3 className="text-lg font-bold mb-4">Teorik PDF</h3>
           <ResponsiveContainer width="100%" height={300}>
@@ -161,20 +143,6 @@ const CauchyDagilimGorsellestiricisi = () => {
               <Tooltip />
               <Legend />
               <Line type="monotone" dataKey="pdf" stroke="#8884d8" name="Teorik PDF" dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-4">
-          <h3 className="text-lg font-bold mb-4">Örneklem Dağılımı (n=1000)</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={orneklemVerileri}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="x" type="number" domain={[-10, 10]} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="freq" stroke="#82ca9d" name="Örneklem" dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -195,54 +163,58 @@ const CauchyDagilimGorsellestiricisi = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow-lg p-4">
-        <h3 className="text-lg font-bold mb-4">MLT Test Grafikleri (Her biri 1000 örneklem)</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <h3 className="text-lg font-bold mb-4">MLT Test Grafikleri (Her biri 5000 örneklem)</h3>
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm font-semibold mb-2">n=5</p>
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={mlt5Veriler}>
+              <ComposedChart data={mlt5Veriler}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="x" type="number" domain={[-10, 10]} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="freq" fill="#8884d8" name="n=5 Örneklem" />
-              </BarChart>
+                <Bar dataKey="freq" fill="#8884d8" fillOpacity={0.6} />
+                <Line type="monotone" dataKey="density" stroke="#ff7300" dot={false} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
           <div>
             <p className="text-sm font-semibold mb-2">n=10</p>
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={mlt10Veriler}>
+              <ComposedChart data={mlt10Veriler}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="x" type="number" domain={[-10, 10]} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="freq" fill="#82ca9d" name="n=10 Örneklem" />
-              </BarChart>
+                <Bar dataKey="freq" fill="#8884d8" fillOpacity={0.6} />
+                <Line type="monotone" dataKey="density" stroke="#ff7300" dot={false} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
           <div>
             <p className="text-sm font-semibold mb-2">n=30</p>
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={mlt30Veriler}>
+              <ComposedChart data={mlt30Veriler}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="x" type="number" domain={[-10, 10]} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="freq" fill="#ff7300" name="n=30 Örneklem" />
-              </BarChart>
+                <Bar dataKey="freq" fill="#8884d8" fillOpacity={0.6} />
+                <Line type="monotone" dataKey="density" stroke="#ff7300" dot={false} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
           <div>
             <p className="text-sm font-semibold mb-2">n=50</p>
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={mlt50Veriler}>
+              <ComposedChart data={mlt50Veriler}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="x" type="number" domain={[-10, 10]} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="freq" fill="#0088fe" name="n=50 Örneklem" />
-              </BarChart>
+                <Bar dataKey="freq" fill="#8884d8" fillOpacity={0.6} />
+                <Line type="monotone" dataKey="density" stroke="#ff7300" dot={false} />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
